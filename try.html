@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy Birthday ✨</title>
+  <style>
+    :root{
+      --pink:#ff4d8d; --rose:#ff8fb3; --bg1:#fff0f5; --bg2:#fff; --ink:#303036; --muted:#6b7280;
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif; color:var(--ink);
+      background: linear-gradient(180deg,var(--bg1),var(--bg2));
+      overflow-x:hidden;
+    }
+    .container{max-width:1100px;margin:0 auto;padding:20px}
+    header{position:sticky;top:0;backdrop-filter:saturate(1.2) blur(10px);background:rgba(255,255,255,.6);border-bottom:1px solid #ffd0df;z-index:5}
+    header .row{display:flex;align-items:center;justify-content:space-between;padding:12px 20px}
+    .badge{display:inline-flex;gap:8px;align-items:center;font-weight:600}
+    .btn{appearance:none;border:1px solid #ffd0df;background:#fff;border-radius:999px;padding:10px 14px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.04);font-weight:600}
+    .btn.primary{background:var(--pink);color:#fff;border-color:var(--pink)}
+    .btn:active{transform:translateY(1px)}
+
+    /* Balloons background */
+    .balloons{pointer-events:none;position:fixed;inset:0;overflow:hidden;z-index:0}
+    .balloon{position:absolute;bottom:-12%;font-size:44px;opacity:.4;animation:floatUp 18s linear infinite}
+    @keyframes floatUp{0%{transform:translateY(0)}100%{transform:translateY(-120vh)}}
+
+    /* Sections */
+    .card{background:rgba(255,255,255,.75);border:1px solid #ffd0df;border-radius:var(--radius);box-shadow:0 10px 30px rgba(255,77,141,.06)}
+    .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:center;padding:28px}
+    @media (max-width:900px){.hero{grid-template-columns:1fr}} 
+    .title{font-size:46px;line-height:1.1;margin:0 0 10px;font-weight:900}
+    .gradient{background:linear-gradient(90deg,#ff2e77,#ff9ac2,#a855f7);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .lead{color:var(--muted);font-size:17px}
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:8px 12px;border:1px solid #ffd0df;background:#fff}
+
+    /* Countdown */
+    .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .timebox{border:1px solid #ffd0df;background:#fff;border-radius:16px;padding:16px;text-align:center}
+    .timebox b{font-size:28px}
+    .muted{color:var(--muted)}
+
+    /* Modal */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:20px;z-index:30}
+    .modal.show{display:flex}
+    .modal .panel{max-width:900px;width:100%;}
+    .p16{padding:16px}
+    .p24{padding:24px}
+    .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .settings-grid label{font-size:13px;color:#4b5563;margin-bottom:6px;display:block}
+    .input, textarea, input[type="date"]{width:100%;padding:10px 12px;border:1px solid #e9c1cf;border-radius:14px;outline:0}
+    textarea{min-height:80px}
+
+    /* Flip cards */
+    .flip{height:140px;perspective:1000px;cursor:pointer}
+    .flip-inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+    .flip.flip-active .flip-inner{transform:rotateY(180deg)}
+    .flip-front,.flip-back{position:absolute;inset:0;border:1px solid #ffd0df;border-radius:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.06);backface-visibility:hidden}
+    .flip-front{background:#fff;font-weight:900;font-size:24px}
+    .flip-back{background:linear-gradient(135deg,#ffe4ef,#fff);padding:14px;font-size:14px;transform:rotateY(180deg)}
+
+    /* Photo scroller */
+    .scroller{display:flex;gap:12px;overflow-x:auto;padding:8px}
+    .photo{flex:0 0 260px;height:160px;border-radius:16px;border:1px solid #ffd0df;overflow:hidden;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.05)}
+    .photo img{width:100%;height:100%;object-fit:cover}
+
+    /* Game */
+    .game-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:14px;margin:6px 0 10px}
+
+    /* Confetti canvas */
+    #confetti{position:fixed;inset:0;pointer-events:none;z-index:20}
+  </style>
+</head>
+<body>
+  <!-- Background balloons -->
+  <div class="balloons" id="balloons"></div>
+  <canvas id="confetti"></canvas>
+
+  <header>
+    <div class="row container">
+      <div class="badge">🎉 <span id="hdr">Happy Birthday • <span id="hdrName">Bestie</span></span></div>
+      <div class="row">
+        <button class="btn" id="btnCustomize">Customize</button>
+        <button class="btn primary" id="btnShare">Share</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="position:relative;z-index:1">
+    <section class="card hero">
+      <div>
+        <h1 class="title"> <span class="gradient">Happy Birthday</span><br><span id="typewriter"></span></h1>
+        <p class="lead">I coded this little web world just for you — because code is my love language and you are my favorite feature. 💖</p>
+        <div class="row" style="margin:14px 0 8px">
+          <button class="btn primary" id="btnCelebrate">✨ Celebrate</button>
+          <button class="btn" id="btnGift">🎁 Open Gift</button>
+          <button class="btn" id="btnGame">🎮 Play Mini‑Game</button>
+        </div>
+        <div class="row muted">
+          <button class="pill" id="btnMusic"><span id="musicIcon">🔊</span> <span id="musicLabel">Music</span></button>
+          <small class="muted" id="songInfo" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></small>
+        </div>
+        <audio id="player" loop></audio>
+      </div>
+      <div class="card p24">
+        <div class="muted" style="text-align:center">📅 <span id="dateLabel">Set your birthday date</span></div>
+        <div class="grid4" style="margin-top:14px" id="countdownBoxes"></div>
+        <div style="margin-top:16px" class="card p16">
+          <div class="row" style="justify-content:center;gap:10px">
+            <span id="lockIcon">🔒</span>
+            <input class="input" id="unlockCode" maxlength="4" placeholder="Enter 4‑digit code (DDMM)" style="max-width:180px">
+            <button class="btn primary" id="btnUnlock">Unlock</button>
+          </div>
+          <div id="secretMsg" style="text-align:center;margin-top:8px;display:none">🔓 Secret: <b>you are truly special to me.</b> ✨</div>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin:18px 0">
+      <h2>Little Notes for <span id="nameInline">Bestie</span></h2>
+      <div id="notes" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"></div>
+    </section>
+
+    <section class="card p24" style="margin-bottom:18px">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">Memory Reel</h2>
+        <small class="muted">📷 Add image URLs in Customize</small>
+      </div>
+      <div class="scroller" id="reel"></div>
+    </section>
+  </main>
+
+  <!-- Gift Modal -->
+  <div class="modal" id="giftModal">
+    <div class="panel card p24" style="text-align:center">
+      <div style="font-size:40px">🎁</div>
+      <h3>For you, <span id="giftName">Friend</span></h3>
+      <p class="muted" id="giftText">If I could push code to your smile, I’d commit every day. Here’s a small wish from the dev who cares about you a lot. — <b id="yourNameBadge">Your Secret Admirer</b></p>
+      <button class="btn primary" id="btnGiftOk">💗 Aww, thanks!</button>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal" id="settings">
+    <div class="panel card p24">
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h3 style="margin:0">Customize</h3>
+        <button class="btn primary" id="btnDone">Done</button>
+      </div>
+      <div class="settings-grid">
+        <div>
+          <label>Riya</label>
+          <input class="input" id="inpName" placeholder="e.g., Riya" />
+        </div>
+        <div>
+          <label>Nishant</label>
+          <input class="input" id="inpFrom" placeholder="e.g., Nishant" />
+        </div>
+        <div>
+          <label>Birthday Date</label>
+          <input type="date" id="inpDate" />
+        </div>
+        <div>
+          <label>Song URL (mp3)</label>
+          <input class="input" id="inpSong" placeholder="https://.../song.mp3" />
+        </div>
+        <div style="grid-column:1 / -1">
+          <label>Add / Edit Messages (comma separated)</label>
+          <textarea id="inpMsgs" placeholder="You light up every room, May your bugs be few,..."></textarea>
+        </div>
+        <div style="grid-column:1 / -1">
+          <label>Memory Photos (comma separated URLs)</label>
+          <textarea id="inpPhotos" placeholder="https://...img1.jpg, https://...img2.jpg"></textarea>
+          <small class="muted">Tip: paste now, they’ll persist in this browser.</small>
+        </div>
+      </div>
+      <div class="row" style="justify-content:space-between;margin-top:10px">
+        <small class="muted">You can also set via URL: <code>?name=Ananya&from=Nishant&date=2025-08-25&song=url</code></small>
+        <button class="btn" id="btnCopyLink">Copy Link</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Utilities & State =====
+    const qs = new URLSearchParams(location.search);
+    const $ = (s,root=document)=>root.querySelector(s);
+    const $$ = (s,root=document)=>[...root.querySelectorAll(s)];
+
+    const S = {
+      name: localStorage.getItem('bd_name') || qs.get('name') || 'Bestie',
+      from: localStorage.getItem('bd_from') || qs.get('from') || 'Your Secret Admirer',
+      date: localStorage.getItem('bd_date') || qs.get('date') || '',
+      song: localStorage.getItem('bd_song') || qs.get('song') || '',
+      msgs: JSON.parse(localStorage.getItem('bd_msgs')||'[]'),
+      photos: JSON.parse(localStorage.getItem('bd_photos')||'[]')
+    };
+    if(!S.msgs.length){
+      S.msgs = [
+        `You light up every room, ${S.name}.`,
+        'May your bugs be few and your joy infinite!',
+        'Here’s to more laughs, coffees, and inside jokes.',
+        'Proud of the human you are. Keep shining ✨'
+      ];
+    }
+
+    function save(){
+      localStorage.setItem('bd_name', S.name);
+      localStorage.setItem('bd_from', S.from);
+      localStorage.setItem('bd_date', S.date);
+      localStorage.setItem('bd_song', S.song);
+      localStorage.setItem('bd_msgs', JSON.stringify(S.msgs));
+      localStorage.setItem('bd_photos', JSON.stringify(S.photos));
+    }
+
+    function toInputDate(date){
+      if(!date) return '';
+      const d = new Date(date); const tz = d.getTimezoneOffset()*60000;
+      return new Date(d.getTime()-tz).toISOString().slice(0,10);
+    }
+
+    // ===== Background Balloons =====
+    const balloonWrap = document.getElementById('balloons');
+    for(let i=0;i<16;i++){
+      const b = document.createElement('span');
+      b.className='balloon'; b.textContent='🎈';
+      b.style.left = Math.random()*100 + '%';
+      const delay = (Math.random()*8).toFixed(2)+'s';
+      b.style.animationDuration = (16 + Math.random()*8)+'s';
+      b.style.animationDelay = delay;
+      balloonWrap.appendChild(b);
+    }
+
+    // ===== Typewriter =====
+    function typewriter(el, text){
+      el.textContent=''; let i=0;
+      const tick=()=>{ if(i<=text.length){ el.textContent=text.slice(0,i) + '▍'; i++; setTimeout(tick,120);} };
+      tick();
+    }
+
+    // ===== Countdown =====
+    const countdownBoxes = document.getElementById('countdownBoxes');
+    function renderCountdown(){
+      countdownBoxes.innerHTML='';
+      if(!S.date){ countdownBoxes.innerHTML = '<div class="timebox" style="grid-column:1/-1">Set a date to start the countdown ⏳</div>'; return; }
+      const target = new Date(S.date).getTime();
+      const diff = target - Date.now();
+      const d = Math.max(0, Math.floor(diff/86400000));
+      const h = Math.max(0, Math.floor((diff/3600000)%24));
+      const m = Math.max(0, Math.floor((diff/60000)%60));
+      const s = Math.max(0, Math.floor((diff/1000)%60));
+      const boxes = [['d',d],['h',h],['m',m],['s',s]]
+        .map(([k,v])=>`<div class="timebox"><b>${v}</b><div class="muted" style="text-transform:uppercase;letter-spacing:2px;font-size:12px">${k}</div></div>`).join('');
+      countdownBoxes.innerHTML = boxes;
+    }
+    setInterval(renderCountdown,1000);
+
+    // ===== Unlock Logic =====
+    const unlockInput = document.getElementById('unlockCode');
+    const btnUnlock = document.getElementById('btnUnlock');
+    const secretMsg = document.getElementById('secretMsg');
+    function expectedCode(){ if(!S.date) return ''; const d=new Date(S.date); return String(d.getDate()).padStart(2,'0')+String(d.getMonth()+1).padStart(2,'0'); }
+    function tryAutoUnlock(){ const today=new Date(); const tgt = S.date? new Date(S.date):null; if(tgt && today.toDateString()===tgt.toDateString()){secretMsg.style.display='block';$('#lockIcon').textContent='🔓';} }
+    btnUnlock.addEventListener('click',()=>{ if(unlockInput.value===expectedCode()){secretMsg.style.display='block';$('#lockIcon').textContent='🔓';} });
+
+    // ===== Notes / Flip Cards =====
+    const notes = document.getElementById('notes');
+    function renderNotes(){
+      notes.innerHTML = S.msgs.map((msg,i)=>{
+        return `<div class="flip" data-idx="${i}">
+          <div class="flip-inner">
+            <div class="flip-front">#${i+1}</div>
+            <div class="flip-back">${msg}</div>
+          </div>
+        </div>`
+      }).join('');
+      $$('.flip').forEach(card=>{
+        card.addEventListener('click',()=>{
+          card.classList.toggle('flip-active');
+        })
+      })
+    }
+
+    // ===== Photo Reel =====
+    const reel = document.getElementById('reel');
+    function renderReel(){
+      if(!S.photos.length){ reel.innerHTML = '<div class="muted" style="padding:20px;text-align:center;width:100%">Add a few photo URLs to see the memory reel ✨</div>'; return; }
+      reel.innerHTML = S.photos.map(u=>`<figure class="photo"><img src="${u}" alt="memory"></figure>`).join('');
+    }
+
+    // ===== Music =====
+    const player = document.getElementById('player');
+    const btnMusic = document.getElementById('btnMusic');
+    const musicIcon = document.getElementById('musicIcon');
+    const musicLabel = document.getElementById('musicLabel');
+    const songInfo = document.getElementById('songInfo');
+    let muted=false;
+    function applySong(){ if(S.song){ player.src=S.song; songInfo.textContent=S.song; } else { player.removeAttribute('src'); songInfo.textContent=''; } }
+    btnMusic.addEventListener('click',()=>{ if(!player.src) return; muted=!muted; player.muted=muted; if(muted){ musicIcon.textContent='🔇'; musicLabel.textContent='Muted'; player.pause(); } else { musicIcon.textContent='🔊'; musicLabel.textContent='Music'; player.play().catch(()=>{}); } });
+
+    // ===== Gift Modal =====
+    const giftModal = document.getElementById('giftModal');
+    $('#btnGift').addEventListener('click',()=> giftModal.classList.add('show'));
+    $('#btnGiftOk').addEventListener('click',()=> giftModal.classList.remove('show'));
+
+    // ===== Settings Modal =====
+    const settings = document.getElementById('settings');
+    $('#btnCustomize').addEventListener('click',()=>{
+      settings.classList.add('show');
+      $('#inpName').value = S.name;
+      $('#inpFrom').value = S.from;
+      $('#inpDate').value = toInputDate(S.date);
+      $('#inpSong').value = S.song;
+      $('#inpMsgs').value = S.msgs.join(', ');
+      $('#inpPhotos').value = S.photos.join(', ');
+    });
+    $('#btnDone').addEventListener('click',()=>{
+      S.name = $('#inpName').value.trim()||S.name;
+      S.from = $('#inpFrom').value.trim()||S.from;
+      S.date = $('#inpDate').value ? new Date($('#inpDate').value).toISOString() : '';
+      S.song = $('#inpSong').value.trim();
+      S.msgs = $('#inpMsgs').value.split(',').map(s=>s.trim()).filter(Boolean);
+      S.photos = $('#inpPhotos').value.split(',').map(s=>s.trim()).filter(Boolean);
+      save(); applyAll(); settings.classList.remove('show');
+    });
+
+    // Share link
+    $('#btnCopyLink').addEventListener('click',()=>{
+      const url = new URL(location.href);
+      url.searchParams.set('name', S.name);
+      url.searchParams.set('from', S.from);
+      if(S.date) url.searchParams.set('date', toInputDate(S.date));
+      if(S.song) url.searchParams.set('song', S.song);
+      navigator.clipboard.writeText(url.toString());
+      alert('Sharable link copied to clipboard! ✨');
+    });
+    $('#btnShare').addEventListener('click',()=>$('#btnCopyLink').click());
+
+    // ===== Confetti =====
+    const confettiCanvas = document.getElementById('confetti');
+    const ctx = confettiCanvas.getContext('2d');
+    function resize() { confettiCanvas.width = innerWidth; confettiCanvas.height = innerHeight; }
+    addEventListener('resize', resize); resize();
+    function shootConfetti(){
+      const pieces = Array.from({length:200},()=>({
+        x: Math.random()*confettiCanvas.width,
+        y: -20 - Math.random()*40,
+        w: 6+Math.random()*6,
+        h: 10+Math.random()*10,
+        vy: 2+Math.random()*4,
+        vx: -2+Math.random()*4,
+        rot: Math.random()*Math.PI,
+        vr: -0.3+Math.random()*0.6,
+        color: `hsl(${Math.random()*360},90%,60%)`
+      }));
+      let t=0; const anim=()=>{
+        ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+        pieces.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle=p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore(); });
+        t++; if(t<400) requestAnimationFrame(anim);
+      }; anim();
+    }
+    $('#btnCelebrate').addEventListener('click', shootConfetti);
+
+    // ===== Mini Game: Catch Balloons =====
+    let gameOpen=false;
+    $('#btnGame').addEventListener('click',()=>{
+      if(gameOpen) return; gameOpen=true;
+      const wrap = document.createElement('div');
+      wrap.className='modal show'; wrap.innerHTML = `<div class="panel card p24" style="max-width:640px;width:100%">
+        <div class="game-meta"><span>Catch the Balloons 🎈 (15s)</span><button class="btn" id="closeGame">Close</button></div>
+        <div class="game-meta"><span>Time: <b id="t">15</b>s</span><span>Score: <b id="s">0</b></span></div>
+        <canvas id="game" width="560" height="320" style="width:100%;border:1px solid #ffd0df;border-radius:16px"></canvas>
+      </div>`;
+      document.body.appendChild(wrap);
+
+      const cvs = $('#game',wrap), gctx = cvs.getContext('2d');
+      const W=cvs.width, H=cvs.height; let score=0; let time=15;
+      const spawn = ()=>({ x: Math.random()*W, y: H+30, r: 12+Math.random()*18, v: 1+Math.random()*1.8, hue: Math.random()*360 });
+      const balloons = Array.from({length:8}, spawn);
+      function loop(){
+        gctx.clearRect(0,0,W,H);
+        gctx.fillStyle='#fff0f5'; gctx.fillRect(0,0,W,H);
+        balloons.forEach(b=>{ b.y-=b.v; if(b.y<-30){ Object.assign(b, spawn()); b.y=H+30; }
+          gctx.beginPath(); gctx.fillStyle=`hsl(${b.hue},85%,65%)`; gctx.arc(b.x,b.y,b.r,0,Math.PI*2); gctx.fill();
+          gctx.strokeStyle='hsl(330,85%,75%)'; gctx.beginPath(); gctx.moveTo(b.x,b.y+b.r); gctx.lineTo(b.x,b.y+b.r+18); gctx.stroke();
+        });
+        if(time>0) requestAnimationFrame(loop);
+      }
+      loop();
+      const timer = setInterval(()=>{ time--; $('#t',wrap).textContent=time; if(time<=0){ clearInterval(timer); alert(`Score: ${score}! ${score>5? 'Pro level!':''}`); wrap.remove(); gameOpen=false; } },1000);
+      cvs.addEventListener('click',e=>{
+        const r=cvs.getBoundingClientRect(); const x=e.clientX-r.left, y=e.clientY-r.top; let hit=false;
+        balloons.forEach(b=>{ const dx=x-b.x, dy=y-b.y; if(Math.hypot(dx,dy)<b.r){ b.y+=80; hit=true; }});
+        if(hit){ score++; $('#s',wrap).textContent=score; }
+      });
+      $('#closeGame',wrap).addEventListener('click',()=>{ clearInterval(timer); wrap.remove(); gameOpen=false; });
+    });
+
+    // ===== Apply UI =====
+    function applyAll(){
+      $('#hdrName').textContent = S.name;
+      $('#nameInline').textContent = S.name;
+      $('#giftName').textContent = S.name;
+      $('#yourNameBadge').textContent = S.from;
+      $('#dateLabel').textContent = S.date ? new Date(S.date).toDateString() : 'Set your birthday date';
+      typewriter($('#typewriter'), S.name + '!');
+      renderCountdown();
+      renderNotes();
+      renderReel();
+      applySong(); tryAutoUnlock();
+      save();
+    }
+
+    // Console Easter egg
+    console.log(`Psst! Hidden message: Hey ${S.name}, you mean a lot to me. If you see this, smile :) ❤`);
+
+    // Buttons & interactions
+    $('#btnGiftOk').addEventListener('click', shootConfetti);
+    $('#btnGift').addEventListener('click', ()=>{$('#giftText').innerHTML = `If I could push code to your smile, I’d commit every day. Here’s a small wish from the dev who cares about you a lot. — <b>${S.from}</b>`});
+
+    // Music autoplay if provided
+    document.addEventListener('click',()=>{ if(S.song && !player.muted){ player.play().catch(()=>{}); } }, { once:true });
+
+    // Initial paint
+    applyAll();
+
+    // Header buttons bound earlier
+    document.getElementById('btnCustomize').addEventListener('click',()=>{});
+  </script>
+</body>
+</html>
